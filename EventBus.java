@@ -1,22 +1,29 @@
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class EventBus {
-
-
-    public static Map<String, Publisher> publishers = new HashMap<>();
-    public static Map<String, Subscriber> subscribers = new HashMap<>();
-
-    public static void event(String[] tokens) {
-        List<String> publishers = List.of(String.join("", tokens).split(","));
-        for (Map.Entry<String, Subscriber> subscriber: subscribers.entrySet()) {
-            for (String publisher : publishers) {
-                if (subscriber.getValue().publishers.contains(publisher)) {
-                    subscriber.getValue().event(subscriber.getKey(), publisher, EventBus.publishers.get(publisher));
-                }
-            }
-        }
-    }
-
+	private List<Event> eventListeners = new LinkedList<>();
+	
+	public void emit(String eventName, Object payload) {
+		for (Event event : eventListeners) {
+			if(event.name.equals(eventName)) {
+				event.executor.execute(payload);
+			}
+		}
+	}
+	
+	public void on(String eventName, IExecutor executor) {
+		eventListeners.add(new Event(eventName, executor));
+	}
+	
+	class Event {
+		private String name;
+		private IExecutor executor;
+		
+		public Event(String name, IExecutor executor) {
+			super();
+			this.name = name;
+			this.executor = executor;
+		}
+	}
 }
